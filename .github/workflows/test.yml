@@ -6,14 +6,14 @@ on:
 
 jobs:
   cicd-demo:
-    name: Lint code base
+    name: Code Base
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Run CICD-Demo
-        uses: github/CICD-demo@v4
+        uses: github/super-linter@v4
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
