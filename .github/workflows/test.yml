@@ -1,0 +1,19 @@
+name: CICD-Demo
+on:
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  cicd-demo:
+    name: Lint code base
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run CICD-Demo
+        uses: github/CICD-demo@v4
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
