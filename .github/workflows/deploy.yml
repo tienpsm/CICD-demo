@@ -3,10 +3,8 @@ name: Merge Request Deployment Workflow
 # Trigger on pull request events and manual workflow dispatch
 on:
   pull_request:
-    branches:
-      - main
-      - master
-      - develop
+    types:
+      - closed  # Trigger when a pull request is closed
   
   # Allow manual triggering
   workflow_dispatch:
@@ -54,7 +52,11 @@ jobs:
         
     outputs:
       can_deploy: ${{ steps.check-deployment.outputs.can_deploy }}
-    
+
+    if: >
+      github.event_name == 'workflow_dispatch' || 
+      (github.event.pull_request.merged == true)
+
     steps:
       # Checkout the code
       - name: Checkout code
@@ -115,8 +117,10 @@ jobs:
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           elif [[ "${{ github.base_ref }}" == "main" || "${{ github.base_ref }}" == "master" ]]; then
             echo "environment=production" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.base_ref }}" == "develop" ]]; then
+             echo "environment=staging" >> $GITHUB_OUTPUT
           else
-            echo "environment=staging" >> $GITHUB_OUTPUT
+            echo "environment=review" >> $GITHUB_OUTPUT
           fi
       
       # Deploy to specific environment
@@ -126,16 +130,26 @@ jobs:
           
           # Different deployment strategies based on environment
           case $environment in
-            production
+            production)
               echo "Deploying to Production"
-            
+              # Add actual deployment commands for production
+              ;;
+            staging)
+              echo "Deploying to Staging"
+              # Add actual deployment commands for staging
+              ;;
             staging
               echo "Deploying to Staging"
             
-            review
-              echo "Deploying Review Environment"
+            review)
+              echo "Deploying to Review Environment"
+              # Add actual deployment commands for review
+              ;;
+            *)
+              echo "Unknown environment: $environment"
+              exit 1
+              ;;
           esac
-    
       
       # Notify on deployment
       - name: Notification
