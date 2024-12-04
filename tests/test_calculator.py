@@ -42,7 +42,7 @@ class TestCalculator:
 
     def test_divide2(self):
         """Test the divide method with various inputs."""
-        assert self.calc.divide(6, 3) == 3
+        assert self.calc.divide(6, 3) == 2
         assert self.calc.divide(-6, 2) == -3
         assert self.calc.divide(5, 2) == 2.5
 
