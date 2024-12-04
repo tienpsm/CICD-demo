@@ -6,12 +6,12 @@ on:
 
 jobs:
   cicd-demo:
-    name: Code Base
+    name: CICD RUN
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10, 3.11]
+        python-version: [3.9]
     
     steps:
       - name: Checkout code
@@ -28,13 +28,14 @@ jobs:
           pip install -e .  # Install the project in editable mode
           pip install pytest pytest-cov
           
-      - name: Run CICD-Demo
+      - name: Run Lint CODE
         uses: github/super-linter@v4
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run unit tests with pytest
         run: |
           pytest tests/ 
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
       
