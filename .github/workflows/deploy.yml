@@ -1,0 +1,143 @@
+name: Merge Request Deployment Workflow
+
+# Trigger on pull request events and manual workflow dispatch
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy to environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+          - review
+      deploy_type:
+        description: 'Deployment Type'
+        required: true
+        type: choice
+        options:
+          - full
+          - quick
+      auto_approve:
+        description: 'Auto Approve Deployment'
+        type: boolean
+        default: false
+
+# Global environment variables
+env:
+  PYTHON_VERSION: 3.9
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+# Permissions for the workflow
+permissions:
+  contents: read
+  packages: write
+  pull-requests: write
+  deployments: write
+
+jobs:
+  # Validation and Build Job
+  validate-and-build:
+    runs-on: ubuntu-latest
+    outputs:
+      can_deploy: ${{ steps.check-deployment.outputs.can_deploy }}
+    
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Set up Python
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+      
+      # Run linters
+      - name: Run linters
+        run: |
+          poetry run flake8 .
+          poetry run black --check .
+          poetry run isort --check-only .
+      
+      # Run tests
+      - name: Run tests
+        run: |
+          poetry run pytest tests/
+      
+      # Check if deployment is possible
+      - name: Check Deployment Eligibility
+        id: check-deployment
+        run: |
+          can_deploy='false'
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            can_deploy='true'
+          elif [[ "${{ github.base_ref }}" == "main" || "${{ github.base_ref }}" == "master" ]]; then
+            can_deploy='true'
+          fi
+          echo "can_deploy=${can_deploy}" >> $GITHUB_OUTPUT
+      
+      # Build and push Docker image
+      - name: Build and Push Docker Image
+        run: |
+          echo "Build and Push Docker Image"
+
+  # Deployment Job
+  deploy:
+    needs: validate-and-build
+    if: needs.validate-and-build.outputs.can_deploy == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Determine deployment environment
+      - name: Set Deployment Environment
+        id: set-env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.base_ref }}" == "main" || "${{ github.base_ref }}" == "master" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+      
+      # Deploy to specific environment
+      - name: Deploy to Environment
+        run: |
+          environment="${{ steps.set-env.outputs.environment }}"
+          
+          # Different deployment strategies based on environment
+          case $environment in
+            production)
+              echo "Deploying to Production"
+            
+            staging)
+              echo "Deploying to Staging"
+            
+            review)
+              echo "Deploying Review Environment"
+          esac
+    
+      
+      # Notify on deployment
+      - name: Notification
+        if: always()
+        run: |
+          echo "Deploy success"
+        

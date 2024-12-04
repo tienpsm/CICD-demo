@@ -40,6 +40,12 @@ class TestCalculator:
         assert self.calc.divide(-6, 2) == -3
         assert self.calc.divide(5, 2) == 2.5
 
+    def test_divide2(self):
+        """Test the divide method with various inputs."""
+        assert self.calc.divide(6, 3) == 2
+        assert self.calc.divide(-6, 2) == -3
+        assert self.calc.divide(5, 2) == 2.5
+
     def test_divide_by_zero(self):
         """
         Test that dividing by zero raises a ZeroDivisionError.
