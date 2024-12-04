@@ -137,10 +137,7 @@ jobs:
             staging)
               echo "Deploying to Staging"
               # Add actual deployment commands for staging
-              ;;
-            staging
-              echo "Deploying to Staging"
-            
+              ;;            
             review)
               echo "Deploying to Review Environment"
               # Add actual deployment commands for review
