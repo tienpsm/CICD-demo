@@ -29,10 +29,10 @@ jobs:
           pip install pytest pytest-cov
           
       - name: Run Lint CODE
-        uses: github/super-linter@v4
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          poetry run flake8 .
+          poetry run black --check .
+          poetry run isort --check-only .
 
       - name: Run unit tests with pytest
         run: |
