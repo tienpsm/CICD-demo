@@ -126,13 +126,13 @@ jobs:
           
           # Different deployment strategies based on environment
           case $environment in
-            production)
+            production
               echo "Deploying to Production"
             
-            staging)
+            staging
               echo "Deploying to Staging"
             
-            review)
+            review
               echo "Deploying Review Environment"
           esac
     
