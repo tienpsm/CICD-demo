@@ -1,4 +1,4 @@
-name: CICD-Demo
+name: Lint Code
 on:
   pull_request:
     branches:
